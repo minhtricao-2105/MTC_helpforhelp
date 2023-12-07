@@ -1,0 +1,2 @@
+some good reference here: https://stackoverflow.com/questions/1109536/an-algorithm-for-inflating-deflating-offsetting-buffering-polygons
+another good example: https://github.com/jbuckmccready/CavalierContours/tree/master?tab=readme-ov-file

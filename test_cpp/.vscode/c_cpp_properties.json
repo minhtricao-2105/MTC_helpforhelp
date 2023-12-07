@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/minhtricao/catkin_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/minhtricao/ur_ws/devel/include/**",
+        "/home/minhtricao/catkin_ws/src/message_filter/include/**",
+        "/home/minhtricao/catkin_ws/src/nodelet_package/include/**",
+        "/home/minhtricao/ur_ws/src/roboticsgroup_upatras_gazebo_plugins/include/**",
+        "/home/minhtricao/catkin_ws/src/test_cpp/include/**",
+        "/home/minhtricao/ur_ws/src/Universal_Robots_ROS_Driver/ur_calibration/include/**",
+        "/home/minhtricao/ur_ws/src/universal_robot/ur_kinematics/include/**",
+        "/home/minhtricao/ur_ws/src/Universal_Robots_ROS_Driver/ur_robot_driver/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
