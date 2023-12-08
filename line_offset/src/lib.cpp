@@ -1,16 +1,13 @@
 #include "lib.h"
 
+double getLength(const Points2d& p1, const Points2d& p2)
+{
+    return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
+}
+
 double crossProduct(const Points2d &a, const Points2d &b)
 {
     return a.x * b.y - a.y * b.x;
-}
-
-OffsetDirection determineTurn(const Points2d &prev, const Points2d &curr, const Points2d &next)
-{
-    Points2d vec1 = {curr.x - prev.x, curr.y - prev.y};
-    Points2d vec2 = {next.x - curr.x, next.y - curr.y};
-    double res = crossProduct(vec1, vec2);
-    return res > 0 ? OffsetDirection::LEFT : OffsetDirection::RIGHT;
 }
 
 void offsetSegment(const Points2d &p1, const Points2d &p2, double offsetDistance, OffsetDirection direction, Points2d &newP1, Points2d &newP2)
@@ -37,6 +34,26 @@ void offsetSegment(const Points2d &p1, const Points2d &p2, double offsetDistance
     newP2.y = p2.y + normal.y;
 }
 
+Points2d findPointAtDistance(const Points2d& p1, const Points2d& p2, double distance, bool condition)
+{
+    // Calculate the distance between p1 and p2
+    double distanceP1P2 = getLength(p1, p2);
+    double dirX = (p2.x - p1.x) / distanceP1P2;
+    double dirY = (p2.y - p1.y) / distanceP1P2;
+
+    Points2d p3;
+    if (condition) {
+        // P3 is at a distance from P2, in the direction of P1 to P2
+        p3.x = p2.x - dirX * distance;
+        p3.y = p2.y - dirY * distance;
+    } else {
+        // P3 is at a distance from P2, in the opposite direction of P1 to P2
+        p3.x = p2.x + dirX * distance;
+        p3.y = p2.y + dirY * distance;
+    }
+    return p3;
+}
+
 int findIntersection(const Points2d &p1, const Points2d &p2, const Points2d &p3, const Points2d &p4)
 {
     double denominator = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
@@ -51,13 +68,13 @@ int findIntersection(const Points2d &p1, const Points2d &p2, const Points2d &p3,
     double u = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denominator;
 
     // Check if the intersection point lies on both line segments
-    if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
+    if (t >= 0 && t <= 1)
     {
-        return 1; // Intersection in the middle of both segments
+        return 1; // Intersection in the middle of first segment p1 and p2
     }
-    else if (t < 0 || t > 1 || u < 0 || u > 1)
+    else if (u >= 0 && u <= 1)
     {
-        return 2; // Intersection outside of both segments
+        return 2; // Intersection in the middle of second segment p3 and p4
     }
 
     return 0; // No intersection
@@ -69,27 +86,46 @@ std::vector<Points2d> offsetPolyline(const std::vector<Points2d> &points, double
 
     if (points.size() < 2)
     {
-        // Not enough points to form a line
         return offsetPoints;
     }
 
     // Offset the first segment
     Points2d newP1, newP2;
-    offsetSegment(points[0], points[1], offsetDistance, initialDirection, newP1, newP2);
-    offsetPoints.push_back(newP1);
-
-    for (size_t i = 1; i < points.size() - 1; ++i)
+    for(int i = 0; i < points.size() - 1; i++)
     {
-        // Determine the turn direction at the current point
-        OffsetDirection direction = determineTurn(points[i - 1], points[i], points[i + 1]);
 
-        // For the next segment, we only need to calculate the new endpoint
-        offsetSegment(points[i], points[i + 1], offsetDistance, direction, newP1, newP2);
-        offsetPoints.push_back(newP1);
+        offsetSegment(points[i], points[i+1], offsetDistance, initialDirection, newP1, newP2);
+
+        if(i == 0)
+        {
+            offsetPoints.push_back(newP1);
+        }
+
+        // Check condition for points 2:
+        int condition = findIntersection(points[i + 1], points[i + 2], newP1, newP2);
+
+        // if condition == 0, no intersection
+        if (condition == 0)
+        {
+            offsetPoints.push_back(newP2);
+        }
+        
+        // if it intersection in the middle of first segment p1 and p2
+        else if (condition == 1)
+        {
+            Points2d p3;
+            p3 = findPointAtDistance(newP1, newP2, offsetDistance, true);
+            offsetPoints.push_back(p3);
+        }
+
+        // if it intersection in the middle of second segment p3 and p4
+        else if (condition == 2)
+        {
+            Points2d p3;
+            p3 = findPointAtDistance(newP1, newP2, offsetDistance, false);
+            offsetPoints.push_back(p3);
+        }
     }
-
-    // Add the last offset point
-    offsetPoints.push_back(newP2);
 
     return offsetPoints;
 }
